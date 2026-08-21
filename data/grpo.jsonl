@@ -1,0 +1,3 @@
+{"prompt":"只输出 JSON：给出服务健康状态，字段为 status，值为 ok。","required_terms":["status","ok"],"require_json":true}
+{"prompt":"只输出 JSON：给出 WES 默认端口，字段为 port，值为 9102。","required_terms":["port","9102"],"require_json":true}
+

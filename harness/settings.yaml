@@ -1,0 +1,16 @@
+llm-pi-ai:
+  providers:
+    local-lab:
+      apiKeyEnv: LOCAL_LLM_API_KEY
+      displayName: Local single-node lab
+      api: openai-completions
+      baseURL: http://127.0.0.1:8000/v1
+      compat:
+        supportsDeveloperRole: false
+        maxTokensField: max_tokens
+      models:
+        - id: local-warehouse-llm
+          name: Local Warehouse LLM
+          contextWindow: 2048
+          maxTokens: 256
+

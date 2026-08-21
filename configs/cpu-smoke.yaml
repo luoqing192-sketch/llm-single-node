@@ -1,0 +1,24 @@
+model_name: HuggingFaceTB/SmolLM2-135M-Instruct
+output_root: outputs/cpu-smoke
+seed: 42
+device: cpu
+dtype: float32
+max_length: 192
+lora:
+  rank: 8
+  alpha: 16
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+train:
+  learning_rate: 0.0002
+  max_steps: 1
+  gradient_accumulation_steps: 1
+  log_every: 1
+dpo:
+  beta: 0.1
+grpo:
+  beta: 0.02
+  num_generations: 2
+  max_new_tokens: 16
+  temperature: 0.9
+

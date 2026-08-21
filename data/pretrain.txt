@@ -1,0 +1,7 @@
+WES is a warehouse execution system. It receives orders from WMS, allocates inventory, creates execution tasks, and coordinates with ESS.
+ESS schedules robots and equipment. WES sends transport tasks to ESS, while ESS reports task state and equipment events.
+An inbound workflow normally includes receiving, container binding, putaway task creation, equipment execution, and inventory confirmation.
+An outbound workflow normally includes order release, inventory allocation, picking, sorting, packing, and shipment confirmation.
+In an event-sourced service, durable events reconstruct state. Commands request changes, events record accepted facts, and snapshots reduce recovery time.
+Operational troubleshooting should correlate request identifiers, task identifiers, container codes, timestamps, and state transitions across WMS, WES, and ESS.
+

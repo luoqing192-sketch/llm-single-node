@@ -1,0 +1,4 @@
+{"messages":[{"role":"user","content":"WES、ESS 和 WMS 分别负责什么？"},{"role":"assistant","content":"WMS 负责仓库业务与订单管理；WES 把订单转成可执行的库存、拣选和搬运任务；ESS 负责机器人及设备调度。典型链路是 WMS 下发订单到 WES，WES 再向 ESS 下发设备任务。"}]}
+{"messages":[{"role":"user","content":"排查一个一直未完成的搬运任务，先看哪些信息？"},{"role":"assistant","content":"先确认任务 ID、容器码、工作站、当前状态和最后更新时间，再按同一关联 ID 检查 WES 下发记录、ESS 接收与状态事件、机器人或设备告警，最后核对回调是否被 WES 正确消费。"}]}
+{"messages":[{"role":"user","content":"用 JSON 给出入库流程的三个核心阶段。"},{"role":"assistant","content":"{\"stages\":[\"receiving\",\"putaway\",\"inventory_confirmation\"]}"}]}
+

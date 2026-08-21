@@ -1,0 +1,25 @@
+model_name: deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B
+output_root: outputs/deepseek-r1-1.5b
+seed: 42
+device: cuda
+dtype: bfloat16
+max_length: 1024
+gradient_checkpointing: true
+lora:
+  rank: 32
+  alpha: 64
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+train:
+  learning_rate: 0.0001
+  max_steps: 200
+  gradient_accumulation_steps: 8
+  log_every: 5
+dpo:
+  beta: 0.1
+grpo:
+  beta: 0.02
+  num_generations: 4
+  max_new_tokens: 256
+  temperature: 0.9
+

@@ -1,0 +1,24 @@
+model_name: Qwen/Qwen2.5-0.5B-Instruct
+output_root: outputs/qwen-0.5b
+seed: 42
+device: cpu
+dtype: float32
+max_length: 384
+lora:
+  rank: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+train:
+  learning_rate: 0.0001
+  max_steps: 20
+  gradient_accumulation_steps: 2
+  log_every: 1
+dpo:
+  beta: 0.1
+grpo:
+  beta: 0.02
+  num_generations: 4
+  max_new_tokens: 48
+  temperature: 0.9
+

@@ -68,23 +68,28 @@ flowchart LR
 
 **一次完整调用的链路**(以 `run_pipeline.sh configs/cpu-smoke.yaml` 为例):
 
-```text
-configs/*.yaml ──► common.load_config()
-                        │
-                        ▼
-data/pretrain.txt  ──► train --stage pt    ──► outputs/<cfg>/pt/adapter
-data/sft.jsonl     ──► train --stage sft   ──► outputs/<cfg>/sft/adapter
-data/preferences.jsonl ─► train --stage dpo ──► outputs/<cfg>/dpo/adapter
-data/grpo.jsonl    ──► train --stage grpo  ──► outputs/<cfg>/grpo/adapter
-                                                    │
-                                                    ▼
-                        merge.py ──► outputs/<cfg>/merged (完整模型)
-                                                    │
-                                                    ▼
-                        serve.py ──► http://127.0.0.1:8000/v1
-                                                    │
-                                                    ▼
-                        start-harness.ps1 ──► http://127.0.0.1:3080 (Harness Web)
+```mermaid
+flowchart TD
+    CFG["configs/*.yaml"] --> LOAD["common.load_config()"]
+    LOAD --> PT["train --stage pt"]
+    LOAD --> SFT["train --stage sft"]
+    LOAD --> DPO["train --stage dpo"]
+    LOAD --> GRPO["train --stage grpo"]
+    DATA_PT["data/pretrain.txt"] --> PT
+    DATA_SFT["data/sft.jsonl"] --> SFT
+    DATA_PREF["data/preferences.jsonl"] --> DPO
+    DATA_GRPO["data/grpo.jsonl"] --> GRPO
+    PT --> A_PT["outputs/cfg/pt adapter"]
+    SFT --> A_SFT["outputs/cfg/sft adapter"]
+    DPO --> A_DPO["outputs/cfg/dpo adapter"]
+    GRPO --> A_GRPO["outputs/cfg/grpo adapter"]
+    A_PT --> SFT
+    A_SFT --> DPO
+    A_DPO --> GRPO
+    A_GRPO --> MERGE["merge.py"]
+    MERGE --> MERGED["outputs/cfg/merged"]
+    MERGED --> SERVE["serve.py :8000/v1"]
+    SERVE --> HARNESS["start-harness.ps1 :3080"]
 ```
 
 ---
@@ -185,12 +190,13 @@ gradient_checkpointing: true             # 显存优化(只有 cuda-1.5b.yaml �
 
 **模型加载策略**(`load_model`, `common.py:74`):
 
-```text
-AutoModelForCausalLM.from_pretrained(model_name)
-        │
-        ├── 有 adapter_path? ──► PeftModel.from_pretrained(继续用之前 adapter)
-        └── 没有 adapter_path 且要训练? ──► get_peft_model + LoraConfig (新建 LoRA)
-        └── 只推理? ──► 裸底座模型
+```mermaid
+flowchart TD
+    BASE["AutoModelForCausalLM.from_pretrained"] --> Q1{有 adapter_path?}
+    Q1 -->|是| PEFT["PeftModel.from_pretrained 继续用已有 adapter"]
+    Q1 -->|否| Q2{trainable?}
+    Q2 -->|是| NEW["get_peft_model + LoraConfig 新建 LoRA"]
+    Q2 -->|否| BARE["裸底座模型 仅推理"]
 ```
 
 - 支持 `gradient_checkpointing`:开启后 `use_cache=False`,用「重算激活」换显存。
@@ -198,11 +204,11 @@ AutoModelForCausalLM.from_pretrained(model_name)
 
 **`completion_logps`**(`common.py:142`)是 DPO/GRPO 的核心工具:
 
-```text
-model(input_ids) → logits[:, :-1]
-对每个 token: log_softmax 取标签 token 的 log 概率
-用 prompt_lengths 做掩码:只统计「prompt 之后生成的 token」,忽略 prompt 部分
-返回 (每个序列总 logps, 每个序列有效 token 数)
+```mermaid
+flowchart TD
+    FWD["model(input_ids) -> logits[:, :-1]"] --> LOGP["log_softmax 取标签 token 的 log 概率"]
+    LOGP --> MASK["用 prompt_lengths 掩码: 只统计 prompt 之后的 token"]
+    MASK --> OUT["返回 (序列总 logps, 有效 token 数)"]
 ```
 
 它统一了 DPO(比较 chosen/rejected 的 logp)和 GRPO(算生成内容的策略梯度)对概率的需求。

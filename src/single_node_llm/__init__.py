@@ -1,2 +1,4 @@
-"""Single-node LLM training lab."""
+"""单机大模型训练实验室。  # 本包总说明
 
+把底座模型依次经过继续预训练、SFT、DPO、GRPO，再合并 LoRA 并对外提供 OpenAI 兼容服务。  # 链路总览
+"""  # 文档字符串结束

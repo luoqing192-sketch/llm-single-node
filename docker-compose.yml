@@ -1,0 +1,74 @@
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.stack
+    command: python -m single_node_llm.gateway --config /app/configs/gateway.yaml --host 0.0.0.0 --port 8080
+    ports:
+      - "8080:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./configs:/app/configs:ro
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    networks:
+      - edge
+      - isolated
+
+  sandbox:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.stack
+    command: python -m single_node_llm.sandbox --host 0.0.0.0 --port 8090
+    read_only: true
+    tmpfs:
+      - /tmp
+    mem_limit: 512m
+    pids_limit: 64
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8090/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    networks:
+      - isolated
+
+  agent:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.stack
+    command: python -m single_node_llm.agent --host 0.0.0.0 --port 8091
+    ports:
+      - "8091:8091"
+    environment:
+      GATEWAY_URL: http://gateway:8080/v1
+      SANDBOX_URL: http://sandbox:8090
+      AGENT_MODEL: ${AGENT_MODEL:-agent-default}
+    depends_on:
+      gateway:
+        condition: service_healthy
+      sandbox:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8091/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    networks:
+      - edge
+      - isolated
+
+networks:
+  edge:
+  isolated:
+    internal: true

@@ -1,0 +1,10 @@
+.git
+.venv
+.venv-idea
+.idea
+.dsh-home
+outputs
+__pycache__
+*.pyc
+*.egg-info
+.cache

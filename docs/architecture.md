@@ -320,3 +320,16 @@ flowchart LR
 | advantage | 组内标准化后的奖励:`(r - mean)/std`,GRPO 的策略梯度权重 |
 | adapter | LoRA 增量权重(几 MB),可与底座合并或单独保存 |
 | KL 惩罚 | 约束策略别偏离参考模型太远,防训练崩溃 |
+
+
+---
+
+## 9. Agent 与网关
+
+训练产物仍由 `serve.py` 加载。运行时另起三个进程（可用 docker compose）：
+
+- `gateway.py`：OpenAI 兼容多路由，按 `model` 转发
+- `sandbox.py`：隔离执行 Python
+- `agent.py`：工具循环，默认工具为 `calculator` 与 `python_exec`
+
+详见 [agent-gateway.md](./agent-gateway.md)。

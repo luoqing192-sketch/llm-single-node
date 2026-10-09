@@ -1,0 +1,19 @@
+# 多路由模型网关：按请求里的 model 字段转发到不同上游。
+listen_host: 0.0.0.0
+listen_port: 8080
+request_timeout_sec: 120
+
+routes:
+  - id: echo-demo
+    description: 无真实模型时的联调路由，直接回显，方便验证网关/Agent/沙箱
+    type: echo
+
+  - id: local-warehouse-llm
+    description: 本仓库 serve.py 合并后的本地模型
+    type: openai
+    upstream: http://host.docker.internal:8000/v1
+    rewrite_model: local-warehouse-llm
+
+  - id: agent-default
+    description: Agent 默认走的路由，先指向 echo，接上本地服务后可改成 local-warehouse-llm
+    type: echo

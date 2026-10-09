@@ -8,6 +8,7 @@
 
 - [技术架构文档](docs/architecture.md) — 目录结构、数据流、模块与算法原理、阅读路线图
 - [操作手册](docs/operations.md) — 环境搭建、训练/服务运行、配置调整、数据准备、故障排查
+- [Agent / 沙箱 / 网关](docs/agent-gateway.md) — 多路由模型网关、隔离沙箱、docker compose 与工具 Agent
 
 ## 当前机器结论
 
@@ -62,6 +63,22 @@ wsl -d Ubuntu -- bash /mnt/d/llm_learning/llm-single-node/scripts/test_api.sh
 接口地址为 `http://127.0.0.1:8000/v1`，模型 ID 为 `local-warehouse-llm`。
 
 轻量服务会读取模型的 `max_position_embeddings`，为输出预留空间，并在输入超限时从左侧截断，优先保留最近消息。Harness 标准模式的系统提示和工具 schema 很长；135M 冒烟模型会发生截断，只适合验证链路。要获得可用的 Agent 行为，应使用长上下文的 1.5B/7B 模型并只挂载实际需要的工具。
+
+
+## Agent、沙箱与模型网关
+
+训练合并后的 `serve.py` 仍然只服务一个本地模型。新增运行时栈：
+
+- 网关 `8080`：按 `model` 路由到 echo / 本地 serve / 外部 OpenAI 兼容接口
+- 沙箱 `8090`：无外网的受限 Python 子进程
+- Agent `8091`：调用网关，并用沙箱执行 `python_exec`
+
+```powershell
+wsl -d Ubuntu -- bash /mnt/d/llm_learning/llm-single-node/scripts/compose-up.sh
+wsl -d Ubuntu -- bash /mnt/d/llm_learning/llm-single-node/scripts/test_stack.sh
+```
+
+细节见 [docs/agent-gateway.md](docs/agent-gateway.md)。
 
 ## 运行 0.5B 本地实验
 
